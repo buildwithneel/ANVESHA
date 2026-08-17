@@ -1,0 +1,40 @@
+{
+  "CAM-07": {
+    "camera_id": "CAM-07",
+    "location": "Platform 3 North Foot-Overbridge",
+    "restricted_zones": [
+      {
+        "name": "Track Maintenance Zone",
+        "polygon_pct": [
+          [10, 60],
+          [90, 60],
+          [90, 95],
+          [10, 95]
+        ]
+      }
+    ],
+    "crowd_zones": [
+      {
+        "name": "Platform 3 Main Passenger Area",
+        "max_capacity": 50,
+        "polygon_pct": [
+          [5, 10],
+          [95, 10],
+          [95, 55],
+          [5, 55]
+        ]
+      }
+    ],
+    "work_zones": [
+      {
+        "name": "Maintenance Yard Bay 4",
+        "polygon_pct": [
+          [10, 10],
+          [50, 10],
+          [50, 50],
+          [10, 50]
+        ]
+      }
+    ]
+  }
+}

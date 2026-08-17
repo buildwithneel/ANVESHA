@@ -1,0 +1,31 @@
+{
+  "name": "railguard-ai",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "backend": "python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 --app-dir backend",
+    "seed:db": "python -m app.database.seed",
+    "test:backend": "python -m pytest backend/tests"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.0.5",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.2.0"
+  },
+  "dependencies": {
+    "axios": "^1.19.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^13.1.0",
+    "lucide-react": "^1.31.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.18.2",
+    "recharts": "^3.10.1",
+    "tailwind-merge": "^3.6.0"
+  }
+}

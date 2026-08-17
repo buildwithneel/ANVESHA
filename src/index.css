@@ -1,0 +1,217 @@
+@import "tailwindcss";
+
+/* ── Enterprise Railway Operational Theme (Tailwind v4 @theme) ── */
+@theme {
+  /* Light Mode Palette */
+  --color-canvas: #F4F6F9;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #F8FAFC;
+  --color-surface-hover: #F1F5F9;
+  --color-border: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+
+  /* Typography */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748B;
+  --color-text-inverse: #FFFFFF;
+
+  /* Primary Railway Blue Accent */
+  --color-accent: #1E40AF;
+  --color-accent-hover: #1E3A8A;
+  --color-accent-soft: #EFF6FF;
+  --color-accent-border: #BFDBFE;
+
+  /* Severity Colors (Calm, High Contrast, Accessible) */
+  --color-severity-low: #15803D;
+  --color-severity-low-bg: #F0FDF4;
+  --color-severity-low-border: #BBF7D0;
+
+  --color-severity-medium: #B45309;
+  --color-severity-medium-bg: #FFFBEB;
+  --color-severity-medium-border: #FDE68A;
+
+  --color-severity-high: #C2410C;
+  --color-severity-high-bg: #FFF7ED;
+  --color-severity-high-border: #FED7AA;
+
+  --color-severity-critical: #B91C1C;
+  --color-severity-critical-bg: #FEF2F2;
+  --color-severity-critical-border: #FECACA;
+
+  --color-severity-info: #1D4ED8;
+  --color-severity-info-bg: #EFF6FF;
+  --color-severity-info-border: #BFDBFE;
+
+  /* Operational Navigation */
+  --color-nav-bg: #FFFFFF;
+  --color-nav-active-bg: #EFF6FF;
+  --color-nav-hover-bg: #F8FAFC;
+
+  /* Typography Fonts */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+/* ── Base Reset & Scrollbar ───────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+  box-sizing: border-box;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Dark Mode Token Overrides ────────────────────────────── */
+.dark body,
+html.dark body,
+.dark {
+  --color-canvas: #0B0F17;
+  --color-surface: #131B26;
+  --color-surface-raised: #1A2433;
+  --color-surface-hover: #222E40;
+  --color-border: #243042;
+  --color-border-strong: #33435C;
+
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+  --color-text-inverse: #0F172A;
+
+  --color-accent: #3B82F6;
+  --color-accent-hover: #60A5FA;
+  --color-accent-soft: rgba(59, 130, 246, 0.12);
+  --color-accent-border: rgba(59, 130, 246, 0.3);
+
+  --color-severity-low-bg: rgba(21, 128, 61, 0.15);
+  --color-severity-low-border: rgba(34, 197, 94, 0.3);
+  --color-severity-medium-bg: rgba(180, 83, 9, 0.15);
+  --color-severity-medium-border: rgba(245, 158, 11, 0.3);
+  --color-severity-high-bg: rgba(194, 65, 12, 0.15);
+  --color-severity-high-border: rgba(249, 115, 22, 0.3);
+  --color-severity-critical-bg: rgba(185, 28, 28, 0.18);
+  --color-severity-critical-border: rgba(239, 68, 68, 0.35);
+  --color-severity-info-bg: rgba(29, 78, 216, 0.15);
+  --color-severity-info-border: rgba(59, 130, 246, 0.3);
+
+  --color-nav-bg: #131B26;
+  --color-nav-active-bg: rgba(59, 130, 246, 0.15);
+  --color-nav-hover-bg: #1A2433;
+
+  background-color: var(--color-canvas);
+  color: var(--color-text-primary);
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background: #33435C;
+}
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+.dark * {
+  scrollbar-color: #33435C transparent;
+}
+
+/* ── Reduced Motion Accessibility ────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.reduce-motion *, .reduce-motion ::before, .reduce-motion ::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ── Font Size Scaling Accessibility Tokens ──────────────── */
+html.font-size-sm {
+  font-size: 13px;
+}
+html.font-size-base {
+  font-size: 14px;
+}
+html.font-size-lg {
+  font-size: 16px;
+}
+html.font-size-xl {
+  font-size: 18px;
+}
+
+/* ── High Contrast Accessibility Mode ────────────────────── */
+.high-contrast {
+  --color-border: #94A3B8;
+  --color-border-strong: #475569;
+  --color-text-muted: #334155;
+}
+
+.dark.high-contrast, html.dark.high-contrast {
+  --color-border: #64748B;
+  --color-border-strong: #94A3B8;
+  --color-text-muted: #CBD5E1;
+  --color-surface-raised: #1E293B;
+}
+
+.high-contrast button,
+.high-contrast .rg-card,
+.high-contrast input,
+.high-contrast select {
+  border-width: 2px !important;
+}
+
+.high-contrast :focus-visible {
+  outline: 3px solid #3B82F6 !important;
+  outline-offset: 3px !important;
+}
+
+/* ── Card & Focus Styles ─────────────────────────────────── */
+.rg-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
