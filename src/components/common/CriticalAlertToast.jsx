@@ -4,10 +4,15 @@ import { ShieldAlert, Video, CheckCircle2, X, Volume2, VolumeX } from 'lucide-re
 import { Button } from '../ui/Button';
 import { speechService } from '../../services/speechService';
 import { useTranslation } from '../../i18n';
+import { formatEventLabel } from '../../utils/formatters';
 
 export function CriticalAlertToast({ alert, onAcknowledge, onDismiss }) {
+  // ── HOOKS MUST ALWAYS EXECUTE UNCONDITIONALLY AT THE TOP ──
   const navigate = useNavigate();
+  const { language, t } = useTranslation();
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
+  // Early return ONLY AFTER all hooks are initialized
   if (!alert) return null;
 
   const handleViewCamera = () => {
@@ -22,15 +27,19 @@ export function CriticalAlertToast({ alert, onAcknowledge, onDismiss }) {
     if (onDismiss) onDismiss();
   };
 
-  const { language, t } = useTranslation();
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const confidencePct = alert.confidence
+    ? Math.round(alert.confidence * (alert.confidence <= 1 ? 100 : 1))
+    : 94;
+
+  const isCritical = (alert.severity || '').toUpperCase() === 'CRITICAL';
+  const isHigh = (alert.severity || '').toUpperCase() === 'HIGH';
 
   const handleReadAlert = () => {
     if (isSpeaking) {
       speechService.stop();
       setIsSpeaking(false);
     } else {
-      const speechText = `${isCritical ? 'Critical' : 'High'} Alert. ${alert.message || alert.type || ''}. Camera: ${alert.camera_id || alert.cameraId || 'Platform'}.`;
+      const speechText = `${isCritical ? 'Critical' : 'High'} Alert. ${formatEventLabel(alert.type)}. Location: ${alert.camera_id || alert.cameraId || 'Platform'}.`;
       speechService.readAlert(
         speechText,
         language,
@@ -39,13 +48,6 @@ export function CriticalAlertToast({ alert, onAcknowledge, onDismiss }) {
       );
     }
   };
-
-  const confidencePct = alert.confidence
-    ? Math.round(alert.confidence * (alert.confidence <= 1 ? 100 : 1))
-    : 94;
-
-  const isCritical = (alert.severity || '').toUpperCase() === 'CRITICAL';
-  const isHigh = (alert.severity || '').toUpperCase() === 'HIGH';
 
   return (
     <div className="fixed top-16 right-4 z-50 max-w-md w-full animate-in fade-in slide-in-from-top-3 duration-200">
@@ -77,8 +79,11 @@ export function CriticalAlertToast({ alert, onAcknowledge, onDismiss }) {
 
         {/* Message Content */}
         <div className="space-y-1 mb-3">
-          <div className="text-sm font-semibold text-slate-100">
-            {alert.message || `${alert.type ? alert.type.replace('_', ' ').toUpperCase() : 'Hazard'} detected`}
+          <div className="text-sm font-bold text-slate-100">
+            {formatEventLabel(alert.type || alert.title)}
+          </div>
+          <div className="text-xs text-slate-300">
+            {alert.message}
           </div>
           <div className="text-xs text-slate-400 flex items-center gap-2">
             <span className="font-mono text-cyan-300 font-semibold">{alert.camera_id || alert.cameraId}</span>

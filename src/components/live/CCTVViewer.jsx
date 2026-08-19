@@ -5,6 +5,7 @@ import {
   Maximize2, Minimize2, Camera as CameraIcon, Eye, EyeOff,
   Cpu, ImageIcon, AlertTriangle
 } from 'lucide-react';
+import { CCTVVideoFeed } from './CCTVVideoFeed';
 
 /**
  * Normalizes any bounding box specification into percentage coordinates (0 - 100%)
@@ -81,6 +82,7 @@ function normalizeBoundingBox(box, cameraResolution = '1920x1080') {
 export function CCTVViewer({
   camera,
   boundingBoxes = [],
+  sourceType = 'webcam',
   isFullscreen,
   onToggleFullscreen,
   onSnapshot,
@@ -167,23 +169,12 @@ export function CCTVViewer({
 
       {/* ── Video Area + AI Overlay ────────────────────── */}
       <div className="relative flex-1 min-h-0 bg-slate-950 flex items-center justify-center overflow-hidden">
-        {/* Simulated Video Perspective Grid */}
-        <div className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: 'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)',
-            backgroundSize: '40px 40px',
-          }}
+        <CCTVVideoFeed
+          camera={camera}
+          sourceType={sourceType}
+          showOverlays={showOverlays}
+          className="w-full h-full"
         />
-
-        {/* Simulated video content — clean dark scene */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/30 via-transparent to-slate-950/50" />
-
-        {/* Camera text overlay */}
-        <div className="text-center text-slate-600 z-10 select-none pointer-events-none">
-          <CameraIcon className="w-10 h-10 mx-auto mb-2 opacity-30" />
-          <div className="text-xs font-mono opacity-40">{camera.id || camera.camera_code} · {camera.name || camera.location}</div>
-          <div className="text-[10px] font-mono opacity-25 mt-1">CCTV Stream · Auto-Scaling AI Detection View</div>
-        </div>
 
         {/* ── Bounding Box Overlays (Scalable Percentage-Based) ──────────────────────── */}
         {showOverlays && normalizedBoxes.length > 0 && (

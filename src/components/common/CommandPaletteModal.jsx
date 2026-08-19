@@ -351,7 +351,7 @@ export function CommandPaletteModal({
             <span>Navigation:</span>
             <span className="font-mono text-text-secondary font-semibold">Ctrl + K</span>
           </div>
-          <span className="text-[10px] font-mono">RailGuard Unified Command Desk</span>
+          <span className="text-[10px] font-mono">ANVESHA Unified Command Desk</span>
         </div>
       </div>
     </div>

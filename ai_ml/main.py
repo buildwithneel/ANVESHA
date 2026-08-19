@@ -2,6 +2,7 @@ import argparse
 import time
 import os
 import cv2
+from typing import Optional
 from config import config
 from utils.video import VideoStream, VideoWriter
 from models.model_loader import YOLOModelLoader
@@ -12,6 +13,7 @@ from detection.person_detector import RestrictedZoneDetector
 from detection.ppe_detector import PPESafetyDetector
 from detection.safety_detector import PrototypeFallAndObjectDetector
 from events.event_engine import event_engine
+from utils.stream_server import MJPEGStreamServer
 
 def run_pipeline(
     video_source: str | int = "videos/sample_cctv.mp4",
@@ -59,6 +61,10 @@ def run_pipeline(
     restricted_detector = RestrictedZoneDetector()
     ppe_detector = PPESafetyDetector()
     safety_detector = PrototypeFallAndObjectDetector()
+
+    # Initialize Live MJPEG Stream Server (127.0.0.1:8090)
+    mjpeg_server = MJPEGStreamServer(host="127.0.0.1", port=8090)
+    mjpeg_server.start()
 
     writer = None
     if save_demo:
@@ -150,6 +156,9 @@ def run_pipeline(
             )
             cv2.putText(frame, hud_text, (15, 32), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
+            # 9. Push Annotated Frame to Live MJPEG Stream Server
+            mjpeg_server.update_frame(frame)
+
             if writer:
                 writer.write(frame)
 
@@ -167,16 +176,30 @@ def run_pipeline(
                         print(f"\n[CAMERA SWITCH] Switching to Camera Index {target_idx}...")
                         stream.switch_source(target_idx)
                 elif key in (ord('c'), ord('n')):
-                    curr_idx = stream.source if isinstance(stream.source, int) else 0
-                    target_idx = curr_idx + 1
-                    print(f"\n[CAMERA SWITCH] Cycling to next Camera Index ({target_idx})...")
-                    stream.switch_source(target_idx)
+                    avail_cams = VideoStream.detect_available_cameras()
+                    if not avail_cams:
+                        print("\n[CAMERA SWITCH] No webcams detected.")
+                    elif len(avail_cams) == 1:
+                        target_cam = avail_cams[0]
+                        print(f"\n[CAMERA SWITCH] Only 1 camera detected (Index {target_cam}).")
+                        if stream.source != target_cam:
+                            stream.switch_source(target_cam)
+                    else:
+                        curr_idx = stream.source if isinstance(stream.source, int) else -1
+                        next_idx = avail_cams[0]
+                        if curr_idx in avail_cams:
+                            pos = avail_cams.index(curr_idx)
+                            next_idx = avail_cams[(pos + 1) % len(avail_cams)]
+                        if next_idx != stream.source:
+                            print(f"\n[CAMERA SWITCH] Cycling to next Camera Index ({next_idx})...")
+                            stream.switch_source(next_idx)
 
     finally:
         elapsed = time.time() - start_time
         fps = frame_count / elapsed if elapsed > 0 else 0
         print(f"\n[PIPELINE COMPLETE] Processed {frame_count} frames in {elapsed:.2f}s ({fps:.1f} FPS)")
         
+        mjpeg_server.stop()
         if writer:
             writer.release()
         stream.release()

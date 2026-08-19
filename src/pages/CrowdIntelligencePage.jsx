@@ -15,6 +15,7 @@ import {
 } from '../data/mockDashboardData';
 import { crowdService } from '../services/crowdService';
 import { webSocketService } from '../services/websocket';
+import { formatCrowdStatus } from '../utils/formatters';
 import { cn } from '../utils/cn';
 
 export function CrowdIntelligencePage() {
@@ -65,32 +66,28 @@ export function CrowdIntelligencePage() {
       accessorKey: 'crowd_percentage',
       cell: (row) => {
         const pct = row.crowd_percentage;
-        let color = 'text-emerald-700 dark:text-emerald-400';
-        if (pct >= 80) color = 'text-rose-700 dark:text-rose-400 font-bold';
-        else if (pct >= 60) color = 'text-amber-700 dark:text-amber-400 font-bold';
+        let color = 'text-emerald-400';
+        if (pct >= 80) color = 'text-rose-400 font-bold';
+        else if (pct >= 60) color = 'text-amber-400 font-bold';
         return <span className={cn('font-mono font-bold', color)}>{pct}%</span>;
       },
     },
     { header: 'Est. People', accessorKey: 'people_count', className: 'font-mono' },
     { header: 'Capacity', accessorKey: 'capacity', className: 'font-mono text-text-muted' },
     {
-      header: 'Risk Classification',
+      header: 'Risk Status',
       cell: (row) => {
         const pct = row.crowd_percentage;
-        let sev = 'LOW';
-        let label = 'NORMAL';
-        if (pct >= 80) {
-          sev = 'HIGH';
-          label = 'HIGH';
-        } else if (pct >= 60) {
-          sev = 'MODERATE';
-          label = 'MODERATE';
-        }
+        let statusKey = 'LOW';
+        if (pct >= 85) statusKey = 'CRITICAL';
+        else if (pct >= 75) statusKey = 'HIGH';
+        else if (pct >= 55) statusKey = 'MODERATE';
+
+        const crowdInfo = formatCrowdStatus(statusKey);
         return (
-          <div className="flex items-center gap-1.5">
-            <StatusBadge severity={sev} size="sm" />
-            <span className="font-mono text-xs font-bold">{label}</span>
-          </div>
+          <span className={cn('px-2 py-0.5 rounded text-[10px] font-mono font-bold border', crowdInfo.badgeClass)}>
+            {crowdInfo.label}
+          </span>
         );
       },
     },

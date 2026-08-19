@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { cameraService } from '../../services/cameraService';
+import { formatEventLabel } from '../../utils/formatters';
+import { CCTVVideoFeed } from './CCTVVideoFeed';
 
 export function CCTVFullViewModal({
   camera,
@@ -35,6 +37,8 @@ export function CCTVFullViewModal({
   onClose,
   onPrevCamera,
   onNextCamera,
+  sourceType = 'webcam',
+  customVideoUrl = null,
 }) {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
@@ -75,10 +79,13 @@ export function CCTVFullViewModal({
 
   // Set initial detection from camera or highlighted alert
   useEffect(() => {
-    if (camera?.current_detection) {
+    if (sourceType === 'webcam') {
+      // In live webcam mode, clear static demo detection state unless dynamically triggered by real live feed
+      setSelectedDetection(camera?.current_detection?.is_live ? camera.current_detection : null);
+    } else if (camera?.current_detection) {
       setSelectedDetection(camera.current_detection);
     }
-  }, [camera]);
+  }, [camera, sourceType]);
 
   // Real-time canvas feed renderer
   useEffect(() => {
@@ -156,7 +163,7 @@ export function CCTVFullViewModal({
 
         // AI Label badge on box
         ctx.fillStyle = strokeColor;
-        const labelText = `${(det.type || 'DETECTION').replace('_', ' ').toUpperCase()} ${Math.round(det.confidence * (det.confidence <= 1 ? 100 : 1))}%`;
+        const labelText = `${formatEventLabel(det.type)} ${Math.round(det.confidence * (det.confidence <= 1 ? 100 : 1))}%`;
         ctx.font = 'bold 11px JetBrains Mono, monospace';
         const textWidth = ctx.measureText(labelText).width;
         ctx.fillRect(bx, by - 20, textWidth + 12, 18);
@@ -341,32 +348,26 @@ export function CCTVFullViewModal({
               </div>
             ) : (
               <>
-                <canvas
-                  ref={canvasRef}
-                  width={960}
-                  height={540}
-                  className="w-full h-full object-contain"
+                <CCTVVideoFeed
+                  camera={camera}
+                  sourceType={sourceType}
+                  customVideoUrl={customVideoUrl}
+                  showOverlays={showOverlays}
+                  isModal={true}
+                  zoomLevel={zoomLevel}
+                  panOffset={panOffset}
+                  className="w-full h-full"
                 />
-
-                {/* Top OSD Bar */}
-                <div className="absolute top-3 left-3 flex items-center gap-3 bg-slate-950/80 px-2.5 py-1 rounded text-xs font-mono text-emerald-400 border border-slate-800 backdrop-blur-xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>{camera.camera_code || camera.id}</span>
-                  <span className="text-slate-500">|</span>
-                  <span>1080p @ {isDegraded ? '15 FPS' : '30 FPS'}</span>
-                  <span className="text-slate-500">|</span>
-                  <span className="text-slate-300">{new Date().toLocaleTimeString()}</span>
-                </div>
 
                 {/* Control Action Toast */}
                 {controlNotice && (
-                  <div className="absolute top-3 right-3 bg-blue-950/90 border border-blue-600 text-blue-200 px-3 py-1 rounded text-xs font-mono shadow-lg animate-fade-in">
+                  <div className="absolute top-3 right-3 bg-blue-950/90 border border-blue-600 text-blue-200 px-3 py-1 rounded text-xs font-mono shadow-lg animate-fade-in z-30">
                     {controlNotice}
                   </div>
                 )}
 
                 {/* Bottom Action Bar inside Feed */}
-                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none z-30">
                   <div className="flex items-center gap-2 pointer-events-auto">
                     {/* Take Snapshot Button */}
                     <button
@@ -401,7 +402,7 @@ export function CCTVFullViewModal({
                         'font-bold',
                         selectedDetection.severity === 'CRITICAL' ? 'text-red-400' : 'text-amber-400'
                       )}>
-                        {selectedDetection.type?.replace('_', ' ').toUpperCase()}
+                        {formatEventLabel(selectedDetection.type)}
                       </span>
                       <span className="text-slate-300 font-mono">
                         {Math.round(selectedDetection.confidence * (selectedDetection.confidence <= 1 ? 100 : 1))}% Confidence
@@ -519,8 +520,8 @@ export function CCTVFullViewModal({
                               {ev.severity}
                             </span>
                           </div>
-                          <div className="font-semibold text-text-primary">
-                            {(ev.event_type || 'Event').replace('_', ' ').toUpperCase()}
+                          <div className="font-bold text-text-primary">
+                            {formatEventLabel(ev.event_type)}
                           </div>
                           <div className="flex items-center justify-between text-[11px] text-text-secondary mt-1">
                             <span>Confidence: {Math.round((ev.confidence || 0.9) * 100)}%</span>

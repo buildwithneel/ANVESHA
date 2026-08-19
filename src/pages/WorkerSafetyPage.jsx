@@ -33,7 +33,7 @@ import { Button } from '../components/ui/Button';
 import { Drawer } from '../components/ui/Drawer';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { cn } from '../utils/cn';
-import { formatTime24, formatRelativeTime } from '../utils/formatters';
+import { formatTime24, formatRelativeTime, formatEventLabel } from '../utils/formatters';
 
 import { mockWorksites, mockWorksiteSummary } from '../data/mockWorksites';
 import { workerSafetyService } from '../services/workerSafetyService';
@@ -775,7 +775,7 @@ export function WorkerSafetyPage() {
                               ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400'
                               : 'bg-surface text-text-muted'
                           )}>
-                            {ev.event_type.replace(/_/g, ' ')}
+                            {formatEventLabel(ev.event_type)}
                           </span>
                         </div>
                         <p className="text-[11px] text-text-primary leading-snug">

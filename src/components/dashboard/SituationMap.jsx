@@ -267,14 +267,14 @@ export function SituationMap({
                       {/* Zone Text Label */}
                       <text
                         x={geo.x + (zId === 'FOB' ? geo.width / 2 : 10)}
-                        y={geo.y + (zId === 'FOB' ? geo.height / 2 : 18)}
+                        y={geo.y + (zId === 'FOB' ? geo.height / 2 : 19)}
                         textAnchor={zId === 'FOB' ? 'middle' : 'start'}
                         transform={zId === 'FOB' ? `rotate(-90, ${geo.x + geo.width / 2}, ${geo.y + geo.height / 2})` : undefined}
                         className={cn(
-                          'font-semibold select-none pointer-events-none',
-                          isSelected ? 'fill-blue-700 dark:fill-blue-300 font-bold' : 'fill-text-primary'
+                          'font-extrabold select-none pointer-events-none fill-slate-950 dark:fill-slate-100',
+                          isSelected ? 'fill-blue-800 dark:fill-blue-300' : ''
                         )}
-                        style={{ fontSize: zId.startsWith('PF') ? '11px' : '9.5px' }}
+                        style={{ fontSize: zId.startsWith('PF') ? '12.5px' : '11px' }}
                       >
                         {geo.label}
                       </text>
@@ -282,12 +282,11 @@ export function SituationMap({
                       {/* Zone Percentage Badge (Text Label + Density) */}
                       {zId !== 'FOB' && (
                         <text
-                          x={geo.x + geo.width - 8}
-                          y={geo.y + 18}
+                          x={geo.x + geo.width - 10}
+                          y={geo.y + 19}
                           textAnchor="end"
-                          fill={densityCfg.fill}
-                          className="font-mono font-bold select-none pointer-events-none"
-                          style={{ fontSize: '10px' }}
+                          className="font-mono font-black select-none pointer-events-none fill-slate-900 dark:fill-white"
+                          style={{ fontSize: '11px' }}
                         >
                           {zData.crowd_percentage}% ({densityCfg.badge})
                         </text>
@@ -296,7 +295,7 @@ export function SituationMap({
                       {/* Active Incident Warning Indicator for High Risk */}
                       {zData.crowd_percentage >= 80 && (
                         <g transform={`translate(${geo.x + geo.width - 24}, ${geo.y + geo.height - 10})`}>
-                          <circle cx="0" cy="0" r="4" fill="#EF4444" className="animate-pulse" />
+                          <circle cx="0" cy="0" r="5" fill="#EF4444" className="animate-pulse" />
                         </g>
                       )}
                     </g>
@@ -304,16 +303,16 @@ export function SituationMap({
                 })}
 
                 {/* Track Area Railway Rails Lines */}
-                <line x1="435" y1="78" x2="685" y2="78" stroke="#94A3B8" strokeWidth="2" strokeDasharray="8 4" opacity="0.4" />
-                <line x1="435" y1="116" x2="685" y2="116" stroke="#94A3B8" strokeWidth="2" strokeDasharray="8 4" opacity="0.4" />
-                <line x1="435" y1="154" x2="685" y2="154" stroke="#94A3B8" strokeWidth="2" strokeDasharray="8 4" opacity="0.4" />
-                <line x1="435" y1="192" x2="685" y2="192" stroke="#94A3B8" strokeWidth="2" strokeDasharray="8 4" opacity="0.4" />
+                <line x1="435" y1="78" x2="685" y2="78" stroke="#64748B" strokeWidth="2" strokeDasharray="8 4" opacity="0.6" />
+                <line x1="435" y1="116" x2="685" y2="116" stroke="#64748B" strokeWidth="2" strokeDasharray="8 4" opacity="0.6" />
+                <line x1="435" y1="154" x2="685" y2="154" stroke="#64748B" strokeWidth="2" strokeDasharray="8 4" opacity="0.6" />
+                <line x1="435" y1="192" x2="685" y2="192" stroke="#64748B" strokeWidth="2" strokeDasharray="8 4" opacity="0.6" />
 
                 {/* Track labels */}
-                <text x="680" y="74" textAnchor="end" className="fill-text-muted text-[8px] font-mono select-none pointer-events-none">Track 1</text>
-                <text x="680" y="112" textAnchor="end" className="fill-text-muted text-[8px] font-mono select-none pointer-events-none">Track 2</text>
-                <text x="680" y="150" textAnchor="end" className="fill-text-muted text-[8px] font-mono select-none pointer-events-none">Track 3</text>
-                <text x="680" y="188" textAnchor="end" className="fill-text-muted text-[8px] font-mono select-none pointer-events-none">Track 4</text>
+                <text x="680" y="74" textAnchor="end" className="fill-text-primary text-[10px] font-mono font-bold select-none pointer-events-none">Track 1</text>
+                <text x="680" y="112" textAnchor="end" className="fill-text-primary text-[10px] font-mono font-bold select-none pointer-events-none">Track 2</text>
+                <text x="680" y="150" textAnchor="end" className="fill-text-primary text-[10px] font-mono font-bold select-none pointer-events-none">Track 3</text>
+                <text x="680" y="188" textAnchor="end" className="fill-text-primary text-[10px] font-mono font-bold select-none pointer-events-none">Track 4</text>
 
                 {/* ── Camera Markers ──────────────────────────────────── */}
                 {cameraMarkers.map((cam) => {
@@ -334,8 +333,8 @@ export function SituationMap({
                         <circle
                           cx={cam.x}
                           cy={cam.y}
-                          r="9"
-                          fill="rgba(59, 130, 246, 0.25)"
+                          r="10"
+                          fill="rgba(59, 130, 246, 0.35)"
                           className="animate-ping"
                           style={{ transformOrigin: `${cam.x}px ${cam.y}px` }}
                         />
@@ -345,23 +344,23 @@ export function SituationMap({
                       <circle
                         cx={cam.x}
                         cy={cam.y}
-                        r="6"
-                        fill={isHovered ? '#2563EB' : isSelectedZone ? '#3B82F6' : '#475569'}
+                        r="7"
+                        fill={isHovered ? '#2563EB' : isSelectedZone ? '#3B82F6' : '#1E293B'}
                         stroke="#FFFFFF"
-                        strokeWidth="1.5"
+                        strokeWidth="2"
                         className="transition-all duration-150 shadow-md"
                       />
 
                       {/* Camera Icon glyph */}
-                      <circle cx={cam.x} cy={cam.y} r="2" fill="#FFFFFF" />
+                      <circle cx={cam.x} cy={cam.y} r="2.5" fill="#FFFFFF" />
 
-                      {/* Tiny camera ID label */}
+                      {/* Camera ID label */}
                       <text
                         x={cam.x}
-                        y={cam.y + 11}
+                        y={cam.y + 13}
                         textAnchor="middle"
-                        className="fill-text-muted font-mono font-bold select-none pointer-events-none"
-                        style={{ fontSize: '6.5px' }}
+                        className="fill-slate-900 dark:fill-slate-100 font-mono font-extrabold select-none pointer-events-none"
+                        style={{ fontSize: '8px' }}
                       >
                         {cam.id}
                       </text>
@@ -370,17 +369,17 @@ export function SituationMap({
                 })}
 
                 {/* Legend Overlay at Bottom Right */}
-                <g transform="translate(420, 218)">
-                  <rect x="-8" y="-10" width="285" height="18" rx="3" className="fill-surface/90 stroke-border" strokeWidth="0.5" />
+                <g transform="translate(410, 216)">
+                  <rect x="-8" y="-10" width="300" height="20" rx="4" className="fill-surface stroke-border" strokeWidth="1" />
                   {/* Normal */}
-                  <circle cx="0" cy="0" r="3.5" fill="#22C55E" />
-                  <text x="7" y="3" className="fill-text-secondary text-[8px] font-medium">0–59% NORMAL (LOW)</text>
+                  <circle cx="0" cy="0" r="4" fill="#22C55E" />
+                  <text x="8" y="3" className="fill-text-primary text-[9px] font-bold">0–59% NORMAL</text>
                   {/* Moderate */}
-                  <circle cx="95" cy="0" r="3.5" fill="#F59E0B" />
-                  <text x="102" y="3" className="fill-text-secondary text-[8px] font-medium">60–79% MODERATE</text>
+                  <circle cx="95" cy="0" r="4" fill="#F59E0B" />
+                  <text x="103" y="3" className="fill-text-primary text-[9px] font-bold">60–79% MODERATE</text>
                   {/* High */}
-                  <circle cx="190" cy="0" r="3.5" fill="#EF4444" />
-                  <text x="197" y="3" className="fill-text-secondary text-[8px] font-medium">80–100% HIGH</text>
+                  <circle cx="195" cy="0" r="4" fill="#EF4444" />
+                  <text x="203" y="3" className="fill-text-primary text-[9px] font-bold">80–100% HIGH</text>
                 </g>
               </svg>
 

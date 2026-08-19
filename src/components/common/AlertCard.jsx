@@ -15,7 +15,7 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
-import { formatRelativeTime } from '../../utils/formatters';
+import { formatRelativeTime, formatEventLabel } from '../../utils/formatters';
 import { getSeverityConfig } from '../../utils/severity';
 import { cn } from '../../utils/cn';
 import { speechService } from '../../services/speechService';
@@ -51,7 +51,7 @@ export function AlertCard({
       speechService.stop();
       setIsSpeaking(false);
     } else {
-      const speechText = `${severity} Alert. ${alert.type ? alert.type.replace(/_/g, ' ') : ''}. ${alert.message || alert.title || ''}. Location: ${alert.location || alert.cameraId || 'Platform'}.`;
+      const speechText = `${severity} Alert. ${formatEventLabel(alert.type)}. ${alert.message || alert.title || ''}. Location: ${alert.location || alert.cameraId || 'Platform'}.`;
       speechService.readAlert(
         speechText,
         language,
@@ -81,7 +81,7 @@ export function AlertCard({
       tabIndex={0}
       onClick={handleCardClick}
       onKeyDown={handleKeyDown}
-      aria-label={`Alert ${alert.id}: ${alert.type || alert.title || alert.message}`}
+      aria-label={`Alert ${alert.id}: ${formatEventLabel(alert.type || alert.title)} at ${alert.location || 'Station'}`}
       className={cn(
         'rg-card p-3.5 border-l-4 bg-surface border-border shadow-xs hover:shadow-md transition-all flex flex-col gap-2.5 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent group',
         severityConfig.borderClass,
@@ -111,10 +111,14 @@ export function AlertCard({
         </div>
       </div>
 
-      {/* Message / Title */}
+      {/* Location First & Event Title */}
       <div>
-        <h4 className="text-sm font-semibold text-text-primary group-hover:text-accent transition-colors leading-snug">
-          {alert.type ? alert.type.replace(/_/g, ' ').toUpperCase() : alert.title || 'Security Event'}
+        <div className="flex items-center gap-1.5 text-xs text-accent font-semibold mb-0.5">
+          <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="truncate">{alert.location || alert.stationName || 'Vadodara Railway Station'}</span>
+        </div>
+        <h4 className="text-sm font-bold text-text-primary group-hover:text-accent transition-colors leading-snug">
+          {formatEventLabel(alert.type || alert.title)}
         </h4>
         <p className="text-xs text-text-secondary mt-0.5 line-clamp-2 leading-relaxed">
           {alert.message || alert.description || 'AI safety detection triggered on live CCTV feed.'}
@@ -141,20 +145,16 @@ export function AlertCard({
         </div>
       </div>
 
-      {/* Location & Camera Context */}
-      <div className="flex items-center justify-between text-xs text-text-muted flex-wrap gap-2 border-t border-border/50 pt-2">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <MapPin className="w-3.5 h-3.5 text-accent flex-shrink-0" />
-          <span className="truncate">{alert.location || alert.stationName || 'Vadodara Station'}</span>
-        </div>
-
-        {(alert.cameraId || alert.camera_id) && (
+      {/* Camera Context */}
+      {(alert.cameraId || alert.camera_id) && (
+        <div className="flex items-center justify-between text-xs text-text-muted flex-wrap gap-2 border-t border-border/50 pt-2">
+          <span className="text-[11px] font-medium text-text-muted">Associated Camera</span>
           <div className="flex items-center gap-1.5 font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded border border-border">
             <Camera className="w-3 h-3 text-text-muted" />
             <span className="font-semibold text-text-primary">{alert.cameraId || alert.camera_id}</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Action Toolbar */}
       <div className="flex items-center justify-between gap-1.5 border-t border-border/50 pt-2.5 flex-wrap">

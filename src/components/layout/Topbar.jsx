@@ -386,6 +386,14 @@ export function Topbar({
   );
 }
 
+function getRoleLabel(role) {
+  const r = String(role || '').toUpperCase();
+  if (r === 'ADMIN') return 'Station Control Admin';
+  if (r === 'OFFICER') return 'Duty Safety Officer';
+  if (r === 'OPERATOR') return 'Platform Operator';
+  return role || 'Duty Officer';
+}
+
 function OperatorProfileMenu() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -428,7 +436,7 @@ function OperatorProfileMenu() {
           <div className="text-[10px] text-text-muted font-mono flex items-center gap-1">
             <span>{currentUser.employee_id || 'RLY-10042'}</span>
             <span>·</span>
-            <span className="font-bold text-accent">{currentUser.role}</span>
+            <span className="font-bold text-accent">{getRoleLabel(currentUser.role)}</span>
           </div>
         </div>
         <ChevronDown className="w-3 h-3 text-text-muted hidden sm:block" />
@@ -448,7 +456,7 @@ function OperatorProfileMenu() {
                     ? "bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300"
                     : "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300"
                 )}>
-                  {currentUser.role}
+                  {getRoleLabel(currentUser.role)}
                 </span>
               </div>
               <div className="text-[11px] text-text-muted font-mono">

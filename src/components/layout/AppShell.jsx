@@ -51,18 +51,24 @@ export function AppShell() {
         const liveAlerts = await alertService.getAlerts();
         if (isMounted && Array.isArray(liveAlerts) && liveAlerts.length > 0) {
           const formatted = liveAlerts.map((a) => ({
-            id: a.id,
-            camera_id: a.camera_id,
-            cameraId: a.camera_id,
-            type: a.type,
+            id: a.id || `ALT-${Date.now()}`,
+            camera_id: a.camera_id || a.cameraId || 'CAM-01',
+            cameraId: a.cameraId || a.camera_id || 'CAM-01',
+            type: a.type || a.category || 'SECURITY_ALERT',
+            category: a.category || a.type || 'SECURITY_ALERT',
+            title: a.title || a.message || 'Safety Alert',
             severity: (a.severity || 'MEDIUM').toUpperCase(),
             status: (a.status || 'ACTIVE').toUpperCase(),
-            message: a.message,
-            confidence: a.confidence,
+            message: a.message || a.description || a.title || 'Security alert recorded',
+            description: a.description || a.message || 'Security alert recorded',
+            location: a.location || a.stationName || 'Vadodara Station',
+            stationName: a.stationName || a.location || 'Vadodara Station',
+            confidence: a.confidence || a.confidenceScore || 0.92,
+            confidenceScore: a.confidenceScore || a.confidence || 0.92,
             riskScore: a.risk_score || a.riskScore || 75,
-            risk_score: a.risk_score || 75,
-            timestamp: a.created_at || new Date().toISOString(),
-            createdAt: a.created_at,
+            risk_score: a.risk_score || a.riskScore || 75,
+            timestamp: a.timestamp || a.created_at || a.createdAt || new Date().toISOString(),
+            created_at: a.created_at || a.timestamp || a.createdAt || new Date().toISOString(),
           }));
           setAlertsList(formatted);
         }

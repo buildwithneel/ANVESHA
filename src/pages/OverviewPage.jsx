@@ -17,7 +17,7 @@ import {
   ChevronDown,
   Radio,
 } from 'lucide-react';
-import { cn } from '../../src/utils/cn';
+import { cn } from '../utils/cn';
 
 // Step 10 Unified Command Components
 import { PriorityActionsQueue } from '../components/dashboard/PriorityActionsQueue';
@@ -175,19 +175,20 @@ export function OverviewPage() {
   return (
     <div className="space-y-4 animate-fade-in select-none">
       {/* ── 1. Unified Command Center Header ──────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-surface p-4 rounded-xl border border-border shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-surface p-4.5 rounded-2xl border border-border shadow-xs">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-base font-bold text-text-primary tracking-tight uppercase flex items-center gap-2">
+            <h1 className="text-base font-extrabold text-text-primary tracking-tight uppercase flex items-center gap-2 font-heading">
               <Radio className="w-4 h-4 text-accent animate-pulse" />
-              RAILGUARD AI · COMMAND DASHBOARD
+              ANVESHA · COMMAND CONSOLE
             </h1>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-              ● SYSTEM OPERATIONAL
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              System Active
             </span>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-text-muted mt-1">
+          <div className="flex items-center gap-3 text-xs text-text-muted mt-1 font-sans">
             <span className="font-semibold text-text-primary">
               {summary.station_name || 'Vadodara Railway Station'} ({summary.division || 'Ahmedabad Division'})
             </span>
@@ -203,29 +204,29 @@ export function OverviewPage() {
           {/* Quick Command Palette Button */}
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface-raised hover:bg-surface-hover text-text-secondary text-xs font-mono transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-surface-raised hover:bg-surface-hover text-text-secondary text-xs font-mono transition-all shadow-2xs tactile-button"
             title="Open Command Palette (Ctrl + K)"
           >
             <Command className="w-3.5 h-3.5 text-accent" />
-            <span>Search & Commands</span>
-            <span className="text-[10px] bg-surface px-1 py-0.2 rounded border border-border">Ctrl+K</span>
+            <span>Command Palette</span>
+            <span className="text-[10px] bg-surface px-1.5 py-0.5 rounded border border-border font-bold">Ctrl+K</span>
           </button>
 
           {/* Integrated Demo Trigger */}
           <button
             onClick={handleRunIntegratedDemo}
             disabled={demoRunning}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-white hover:bg-accent-hover text-xs font-semibold transition-colors shadow-xs disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-accent text-white hover:bg-accent-hover text-xs font-extrabold transition-all shadow-sm disabled:opacity-50 tactile-button"
             title="Run Integrated Multi-Module Demo Scenario"
           >
             <Play className={cn('w-3.5 h-3.5 fill-white', demoRunning && 'animate-spin')} />
-            <span>{demoRunning ? 'Simulating...' : 'Run Integrated Demo'}</span>
+            <span>{demoRunning ? 'Simulating Scenario...' : 'Run Live Demo'}</span>
           </button>
 
           {/* Refresh Button */}
           <button
             onClick={loadDashboardData}
-            className="p-1.5 rounded-lg border border-border bg-surface-raised hover:bg-surface-hover text-text-secondary transition-colors"
+            className="p-2 rounded-xl border border-border bg-surface-raised hover:bg-surface-hover text-text-secondary transition-all shadow-2xs tactile-button"
             title="Refresh Telemetry"
           >
             <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />

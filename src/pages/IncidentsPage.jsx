@@ -8,7 +8,7 @@ import { CreateIncidentModal } from '../components/live/CreateIncidentModal';
 import { incidentService } from '../services/incidentService';
 import { webSocketService } from '../services/websocket';
 import { mockIncidents } from '../data/mockIncidents';
-import { formatDateTime, formatRelativeTime } from '../utils/formatters';
+import { formatDateTime, formatRelativeTime, formatEventLabel } from '../utils/formatters';
 import {
   FilePlus,
   Filter,
@@ -147,8 +147,8 @@ export function IncidentsPage() {
       accessorKey: 'type',
       cell: (row) => (
         <div>
-          <div className="font-semibold text-text-primary text-xs">
-            {row.type ? row.type.replace(/_/g, ' ').toUpperCase() : row.title || 'GENERAL'}
+          <div className="font-bold text-text-primary text-xs">
+            {formatEventLabel(row.type || row.title)}
           </div>
           <div className="text-[11px] text-text-secondary line-clamp-1 mt-0.5">
             {row.description}

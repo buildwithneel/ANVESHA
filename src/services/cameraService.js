@@ -10,7 +10,11 @@ export const cameraService = {
   async getCameras(params = {}) {
     try {
       const response = await apiClient.get('/cameras', { params });
-      return response.data;
+      const data = response.data;
+      if (Array.isArray(data)) return data;
+      if (data && Array.isArray(data.cameras)) return data.cameras;
+      if (data && Array.isArray(data.data)) return data.data;
+      return getFallbackCameras(params);
     } catch (err) {
       console.warn('[cameraService] getCameras API fallback:', err);
       // Fallback demo cameras

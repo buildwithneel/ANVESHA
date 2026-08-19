@@ -1,5 +1,6 @@
 import { Camera, Users, MapPin, AlertTriangle, WifiOff, RotateCw } from 'lucide-react';
 import { useState } from 'react';
+import { CCTVVideoFeed } from '../live/CCTVVideoFeed';
 
 const priorityColors = {
   normal: { dot: 'bg-status-normal', badge: 'badge-normal' },
@@ -7,7 +8,7 @@ const priorityColors = {
   critical: { dot: 'bg-status-critical', badge: 'badge-critical' },
 };
 
-export default function CCTVPlayer({ camera, compact = false, onClick }) {
+export default function CCTVPlayer({ camera, compact = false, sourceType = 'webcam', onClick }) {
   const isLive = camera.status === 'live';
   const [hasError, setHasError] = useState(false);
   const priority = priorityColors[camera.priorityLevel] || priorityColors.normal;
@@ -78,28 +79,15 @@ export default function CCTVPlayer({ camera, compact = false, onClick }) {
     >
       {/* Camera Feed Area */}
       <div className={`camera-feed relative ${compact ? 'h-28' : 'h-36'}`}>
-        {/* Camera center icon (placeholder for actual feed) */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Camera size={compact ? 20 : 28} className="text-border-strong" />
-        </div>
-
-        {/* Top Bar — Camera ID + Status */}
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-2.5 py-2">
-          <div className="flex items-center gap-1.5">
-            <span className={`status-dot ${isLive ? 'status-dot-live' : 'status-dot-offline'}`} />
-            <span className="text-[10px] font-mono text-text-secondary bg-surface/80 px-1.5 py-0.5 rounded">
-              {camera.id}
-            </span>
-          </div>
-          {camera.priorityLevel !== 'normal' && (
-            <span className={`badge text-[9px] ${priority.badge}`}>
-              {camera.priorityLevel}
-            </span>
-          )}
-        </div>
+        <CCTVVideoFeed
+          camera={camera}
+          sourceType={sourceType}
+          compact={compact}
+          className="w-full h-full"
+        />
 
         {/* Bottom Bar — People count & density */}
-        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-2.5 py-2 bg-gradient-to-t from-black/30 to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-2.5 py-2 bg-gradient-to-t from-black/60 via-black/30 to-transparent z-20">
           <div className="flex items-center gap-1.5">
             <Users size={11} className="text-white/80" />
             <span className="text-[11px] font-mono text-white/90 font-medium">{camera.peopleCount}</span>

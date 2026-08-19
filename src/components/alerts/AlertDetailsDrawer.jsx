@@ -18,7 +18,7 @@ import {
   Layers,
   ArrowRight,
 } from 'lucide-react';
-import { formatDateTime, formatRelativeTime } from '../../utils/formatters';
+import { formatDateTime, formatRelativeTime, formatEventLabel } from '../../utils/formatters';
 import { getSeverityConfig } from '../../utils/severity';
 import { cn } from '../../utils/cn';
 
@@ -55,8 +55,8 @@ export function AlertDetailsDrawer({
           <div className="flex items-center gap-2.5">
             <StatusBadge severity={severity} size="md" />
             <div>
-              <div className="font-semibold text-sm text-text-primary">
-                {alert.type ? alert.type.replace(/_/g, ' ').toUpperCase() : 'SAFETY ALERT'}
+              <div className="font-bold text-sm text-text-primary">
+                {formatEventLabel(alert.type || alert.title)}
               </div>
               <div className="text-[11px] text-text-secondary mt-0.5">
                 Current Status: <strong className="font-bold text-text-primary">{status}</strong>

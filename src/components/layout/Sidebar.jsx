@@ -17,10 +17,12 @@ import {
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
+  Radio,
 } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
 import { useTranslation } from '../../i18n';
 import { cn } from '../../utils/cn';
+import { RailGuardLogo } from '../common/RailGuardLogo';
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -69,31 +71,25 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'h-full flex flex-col bg-surface border-r border-border transition-all duration-200 ease-in-out select-none z-20 flex-shrink-0',
-        collapsed ? 'w-[64px]' : 'w-[230px]'
+        'h-full flex flex-col bg-surface border-r border-border transition-all duration-300 ease-in-out select-none z-20 flex-shrink-0 shadow-xs',
+        collapsed ? 'w-[68px]' : 'w-[236px]'
       )}
     >
       {/* Brand Header */}
-      <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border min-h-[56px]">
-        <div className="w-8 h-8 rounded-lg bg-blue-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-          <ShieldCheck className="w-5 h-5" />
-        </div>
-        {!collapsed && (
-          <div className="overflow-hidden whitespace-nowrap">
-            <h1 className="text-sm font-bold text-text-primary tracking-tight leading-none">
-              RailGuard AI
-            </h1>
-            <p className="text-[10px] text-text-muted mt-0.5">Control Desk v1.0</p>
-          </div>
+      <div className="flex items-center justify-between px-3.5 py-3 border-b border-border min-h-[58px] overflow-hidden bg-surface-raised/40">
+        {collapsed ? (
+          <RailGuardLogo variant="icon" />
+        ) : (
+          <RailGuardLogo showSubtitle={true} />
         )}
       </div>
 
       {/* Main Navigation Groups */}
-      <nav className="flex-1 px-2 py-3 space-y-4 overflow-y-auto">
+      <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
         {navGroups.map((group, groupIdx) => (
           <div key={groupIdx} className="space-y-1">
             {!collapsed && (
-              <div className="px-3 text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1">
+              <div className="px-3 text-xs font-extrabold text-text-primary dark:text-text-secondary uppercase tracking-wider mb-1.5 font-mono">
                 {group.title}
               </div>
             )}
@@ -105,16 +101,16 @@ export function Sidebar() {
                 <NavLink
                   to={path}
                   className={cn(
-                    'group relative flex items-center gap-3 px-3 py-2 rounded-md text-xs font-medium transition-colors',
+                    'group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all tactile-button',
                     isActive
-                      ? 'bg-accent-soft text-accent font-semibold'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                      ? 'bg-accent text-white font-bold shadow-sm'
+                      : 'text-text-primary dark:text-text-secondary hover:text-accent hover:bg-surface-hover'
                   )}
                 >
                   <Icon
                     className={cn(
-                      'w-4 h-4 flex-shrink-0 transition-colors',
-                      isActive ? 'text-accent' : 'text-text-muted group-hover:text-text-primary'
+                      'w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:scale-105',
+                      isActive ? 'text-white' : 'text-text-primary dark:text-text-muted group-hover:text-accent'
                     )}
                   />
 
@@ -123,10 +119,12 @@ export function Sidebar() {
                   {badge !== undefined && !collapsed && (
                     <span
                       className={cn(
-                        'ml-auto text-[10px] font-bold px-1.5 py-0.2 rounded-full border',
-                        badgeVariant === 'critical'
-                          ? 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30'
-                          : 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30'
+                        'ml-auto text-xs font-mono font-bold px-2 py-0.5 rounded-full border shadow-2xs',
+                        isActive
+                          ? 'bg-white/20 text-white border-white/30'
+                          : badgeVariant === 'critical'
+                          ? 'bg-rose-500/20 text-rose-700 dark:text-rose-400 border-rose-500/40 font-bold'
+                          : 'bg-amber-500/20 text-amber-800 dark:text-amber-400 border-amber-500/40 font-bold'
                       )}
                     >
                       {badge}
@@ -134,7 +132,7 @@ export function Sidebar() {
                   )}
 
                   {badge !== undefined && collapsed && (
-                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-600" />
+                    <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
                   )}
                 </NavLink>
               );
@@ -152,7 +150,7 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom Section */}
-      <div className="p-2 border-t border-border space-y-1 bg-surface-raised/30">
+      <div className="p-2.5 border-t border-border space-y-1 bg-surface-raised/40">
         {bottomItems.map(({ path, label, icon: Icon }) => {
           const isActive = location.pathname === path;
           const link = (
@@ -160,13 +158,13 @@ export function Sidebar() {
               key={path}
               to={path}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-md text-xs font-medium transition-colors',
+                'flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all tactile-button',
                 isActive
-                  ? 'bg-accent-soft text-accent font-semibold'
+                  ? 'bg-accent text-white font-bold shadow-sm'
                   : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
               )}
             >
-              <Icon className="w-4 h-4 flex-shrink-0 text-text-muted" />
+              <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-white" : "text-text-muted")} />
               {!collapsed && <span>{label}</span>}
             </NavLink>
           );
@@ -180,11 +178,11 @@ export function Sidebar() {
           );
         })}
 
-        {/* Collapse Toggle */}
+        {/* Collapse Toggle Button */}
         <button
           type="button"
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center justify-center py-2 text-text-muted hover:text-text-primary hover:bg-surface-hover rounded-md transition-colors border-t border-border/50 mt-1"
+          className="w-full flex items-center justify-center py-2 text-text-muted hover:text-text-primary hover:bg-surface-hover rounded-xl transition-colors border-t border-border/50 mt-1.5"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -193,3 +191,5 @@ export function Sidebar() {
     </aside>
   );
 }
+
+export default Sidebar;

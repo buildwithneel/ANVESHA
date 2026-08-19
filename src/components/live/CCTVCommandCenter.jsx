@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -15,6 +15,8 @@ import {
   ChevronRight,
   Sparkles,
   Camera as CameraIcon,
+  Camera,
+  Video,
   WifiOff,
   CheckCircle2,
   Info,
@@ -44,6 +46,11 @@ export function CCTVCommandCenter() {
   const [layout, setLayout] = useState('2x2'); // '1x1' | '2x2' | '3x3' | '4x4'
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Demo CCTV Feed Source
+  const [cctvSource, setCctvSource] = useState('webcam'); // 'webcam' | 'video' | 'simulated'
+  const [customVideoUrl, setCustomVideoUrl] = useState(null);
+  const fileInputRef = useRef(null);
+
   // Selected camera for full monitoring inspection
   const [selectedCamera, setSelectedCamera] = useState(null);
   const [highlightDetection, setHighlightDetection] = useState(false);
@@ -65,10 +72,11 @@ export function CCTVCommandCenter() {
         }),
         cameraService.getHealthSummary(),
       ]);
-      setCameras(camsData);
-      setHealthSummary(healthData);
+      setCameras(Array.isArray(camsData) ? camsData : []);
+      setHealthSummary(healthData || null);
     } catch (err) {
       console.error('Failed to fetch CCTV cameras:', err);
+      setCameras([]);
     } finally {
       setLoading(false);
     }
@@ -80,9 +88,10 @@ export function CCTVCommandCenter() {
 
   // ── Handle incoming navigation state (e.g. from View Camera in Alert Center) ──
   useEffect(() => {
-    if (location.state?.cameraId && cameras.length > 0) {
-      const targetCam = cameras.find(
-        (c) => c.id === location.state.cameraId || c.camera_code === location.state.cameraId
+    const camArray = Array.isArray(cameras) ? cameras : [];
+    if (location.state?.cameraId && camArray.length > 0) {
+      const targetCam = camArray.find(
+        (c) => c?.id === location.state.cameraId || c?.camera_code === location.state.cameraId
       );
       if (targetCam) {
         setSelectedCamera(targetCam);
@@ -100,9 +109,10 @@ export function CCTVCommandCenter() {
   useEffect(() => {
     // 1. Camera Status Changed
     const unsubStatus = webSocketService.subscribe('camera_status_changed', (data) => {
+      if (!data) return;
       setCameras((prev) =>
-        prev.map((c) =>
-          c.id === data.camera_id || c.camera_code === data.camera_code
+        (Array.isArray(prev) ? prev : []).map((c) =>
+          c && (c.id === data.camera_id || c.camera_code === data.camera_code)
             ? { ...c, status: data.status, ai_enabled: data.ai_enabled, ai_status: data.ai_status }
             : c
         )
@@ -111,9 +121,10 @@ export function CCTVCommandCenter() {
 
     // 2. New Detection Triggered
     const unsubDetection = webSocketService.subscribe('new_detection', (data) => {
+      if (!data) return;
       setCameras((prev) =>
-        prev.map((c) => {
-          if (c.id === data.camera_id || c.camera_code === data.camera_id) {
+        (Array.isArray(prev) ? prev : []).map((c) => {
+          if (c && (c.id === data.camera_id || c.camera_code === data.camera_id)) {
             return {
               ...c,
               ai_status: 'ALERT',
@@ -135,9 +146,10 @@ export function CCTVCommandCenter() {
 
     // 3. New Alert Generated
     const unsubAlert = webSocketService.subscribe('new_alert', (data) => {
+      if (!data) return;
       setCameras((prev) =>
-        prev.map((c) => {
-          if (c.id === data.camera_id || c.camera_code === data.camera_id) {
+        (Array.isArray(prev) ? prev : []).map((c) => {
+          if (c && (c.id === data.camera_id || c.camera_code === data.camera_id)) {
             return {
               ...c,
               active_alert_count: (c.active_alert_count || 0) + 1,
@@ -151,10 +163,11 @@ export function CCTVCommandCenter() {
 
     // 4. Alert Updated (e.g. Resolved / Dismissed)
     const unsubAlertUpdated = webSocketService.subscribe('alert_updated', (data) => {
+      if (!data) return;
       if (data.status === 'RESOLVED' || data.status === 'DISMISSED') {
         setCameras((prev) =>
-          prev.map((c) => {
-            if (c.id === data.camera_id) {
+          (Array.isArray(prev) ? prev : []).map((c) => {
+            if (c && c.id === data.camera_id) {
               return {
                 ...c,
                 active_alert_count: Math.max(0, (c.active_alert_count || 1) - 1),
@@ -177,7 +190,6 @@ export function CCTVCommandCenter() {
   // ── Keyboard Shortcuts ─────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Avoid triggering when typing in inputs/textareas/selects
       const activeTag = document.activeElement?.tagName;
       if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') {
         return;
@@ -215,6 +227,7 @@ export function CCTVCommandCenter() {
   }, [selectedCamera, cameras]);
 
   const handleQuickSnapshot = async (cam) => {
+    if (!cam?.id) return;
     try {
       const snap = await cameraService.takeSnapshot(cam.id);
       setQuickSnapshotToast({
@@ -238,27 +251,31 @@ export function CCTVCommandCenter() {
     return 4;
   }, [layout]);
 
-  const totalPages = Math.max(1, Math.ceil(cameras.length / pageSize));
+  const safeCamList = useMemo(() => (Array.isArray(cameras) ? cameras : []), [cameras]);
+
+  const totalPages = Math.max(1, Math.ceil(safeCamList.length / pageSize));
   const currentPageSafe = Math.min(currentPage, totalPages);
 
   const paginatedCameras = useMemo(() => {
     const start = (currentPageSafe - 1) * pageSize;
-    return cameras.slice(start, start + pageSize);
-  }, [cameras, currentPageSafe, pageSize]);
+    return safeCamList.slice(start, start + pageSize);
+  }, [safeCamList, currentPageSafe, pageSize]);
 
   // Next / Previous Camera within full modal
   const handlePrevCamera = () => {
-    if (!selectedCamera || cameras.length === 0) return;
-    const idx = cameras.findIndex((c) => c.id === selectedCamera.id);
-    const prevIdx = (idx - 1 + cameras.length) % cameras.length;
-    setSelectedCamera(cameras[prevIdx]);
+    if (!selectedCamera || safeCamList.length === 0) return;
+    const idx = safeCamList.findIndex((c) => c?.id === selectedCamera.id);
+    if (idx === -1) return;
+    const prevIdx = (idx - 1 + safeCamList.length) % safeCamList.length;
+    setSelectedCamera(safeCamList[prevIdx]);
   };
 
   const handleNextCamera = () => {
-    if (!selectedCamera || cameras.length === 0) return;
-    const idx = cameras.findIndex((c) => c.id === selectedCamera.id);
-    const nextIdx = (idx + 1) % cameras.length;
-    setSelectedCamera(cameras[nextIdx]);
+    if (!selectedCamera || safeCamList.length === 0) return;
+    const idx = safeCamList.findIndex((c) => c?.id === selectedCamera.id);
+    if (idx === -1) return;
+    const nextIdx = (idx + 1) % safeCamList.length;
+    setSelectedCamera(safeCamList[nextIdx]);
   };
 
   const handleViewAlertsForCamera = (cameraId) => {
@@ -267,17 +284,17 @@ export function CCTVCommandCenter() {
 
   // Metric counts
   const counts = useMemo(() => {
-    const online = cameras.filter((c) => (c.status || '').toUpperCase() === 'LIVE' || (c.status || '').toUpperCase() === 'ONLINE').length;
-    const offline = cameras.filter((c) => (c.status || '').toUpperCase() === 'OFFLINE').length;
-    const degraded = cameras.filter((c) => (c.status || '').toUpperCase() === 'DEGRADED').length;
-    const alerts = cameras.reduce((acc, c) => acc + (c.active_alert_count || 0), 0);
+    const online = safeCamList.filter((c) => (c?.status || '').toUpperCase() === 'LIVE' || (c?.status || '').toUpperCase() === 'ONLINE').length;
+    const offline = safeCamList.filter((c) => (c?.status || '').toUpperCase() === 'OFFLINE').length;
+    const degraded = safeCamList.filter((c) => (c?.status || '').toUpperCase() === 'DEGRADED').length;
+    const alerts = safeCamList.reduce((acc, c) => acc + (c?.active_alert_count || 0), 0);
     return { online, offline, degraded, alerts };
-  }, [cameras]);
+  }, [safeCamList]);
 
   return (
     <div className={cn(
-      'flex flex-col h-full space-y-4 animate-fade-in select-none',
-      isContainerFullscreen && 'fixed inset-0 z-40 bg-canvas p-4'
+      'flex flex-col min-h-full space-y-4 animate-fade-in select-none',
+      isContainerFullscreen && 'fixed inset-0 z-40 bg-canvas p-4 overflow-y-auto'
     )}>
       {/* ── 1. Header & Metrics Bar ────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-surface p-4 rounded-xl border border-border shadow-xs">
@@ -407,6 +424,79 @@ export function CCTVCommandCenter() {
             <option value="Alert">Active Alert</option>
           </select>
 
+          {/* Camera Source Selector Segmented Control */}
+          <div className="flex items-center gap-1 bg-surface-raised p-1 rounded-lg border border-border text-xs">
+            <span className="text-[10px] font-mono font-bold text-text-muted px-1 uppercase tracking-wider">Source:</span>
+            <button
+              type="button"
+              onClick={() => setCctvSource('webcam')}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all',
+                cctvSource === 'webcam'
+                  ? 'bg-emerald-600 text-white font-semibold shadow-xs'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+              )}
+              title="Use Laptop Webcam"
+            >
+              <Camera className="w-3.5 h-3.5" />
+              <span>Laptop Camera</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCctvSource('video')}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all',
+                cctvSource === 'video'
+                  ? 'bg-amber-600 text-white font-semibold shadow-xs'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+              )}
+              title="Use Local Demo Video"
+            >
+              <Video className="w-3.5 h-3.5" />
+              <span>Demo Video</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCctvSource('simulated')}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all',
+                cctvSource === 'simulated'
+                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+              )}
+              title="Use Fallback Simulated Grid"
+            >
+              <Grid className="w-3.5 h-3.5" />
+              <span>Simulated Grid</span>
+            </button>
+
+            {/* Optional Custom File Upload Button */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const url = URL.createObjectURL(file);
+                  setCustomVideoUrl(url);
+                  setCctvSource('video');
+                }
+              }}
+            />
+            {cctvSource === 'video' && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-2 py-1 text-[11px] font-mono text-amber-400 hover:underline border-l border-border pl-2"
+                title="Upload custom local demo video file"
+              >
+                {customVideoUrl ? 'Custom File' : '+ Upload File'}
+              </button>
+            )}
+          </div>
+
           {/* Refresh Button */}
           <button
             onClick={loadData}
@@ -478,8 +568,8 @@ export function CCTVCommandCenter() {
       </div>
 
       {/* ── 3. Responsive Camera Grid ──────────────────────────── */}
-      <div className="flex-1 overflow-y-auto">
-        {cameras.length === 0 ? (
+      <div className="flex-1 min-h-[300px]">
+        {safeCamList.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 bg-surface rounded-xl border border-border text-center text-text-muted">
             <CameraIcon className="w-12 h-12 text-text-muted mb-3 opacity-60" />
             <h3 className="text-sm font-semibold text-text-primary">No CCTV cameras match your filter criteria</h3>
@@ -508,13 +598,15 @@ export function CCTVCommandCenter() {
               layout === '4x4' && 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
             )}
           >
-            {paginatedCameras.map((camera) => (
+            {paginatedCameras.map((camera, index) => (
               <CCTVCameraCard
-                key={camera.id}
+                key={camera?.id || index}
                 camera={camera}
-                isFocused={selectedCamera?.id === camera.id}
+                isFocused={selectedCamera?.id === camera?.id}
                 onSelect={(cam) => setSelectedCamera(cam)}
                 onViewAlerts={handleViewAlertsForCamera}
+                sourceType={cctvSource}
+                customVideoUrl={customVideoUrl}
               />
             ))}
           </div>
@@ -527,6 +619,8 @@ export function CCTVCommandCenter() {
           camera={selectedCamera}
           initialAlertId={relatedAlertId}
           highlightDetection={highlightDetection}
+          sourceType={cctvSource}
+          customVideoUrl={customVideoUrl}
           onClose={() => {
             setSelectedCamera(null);
             setHighlightDetection(false);
@@ -552,3 +646,5 @@ export function CCTVCommandCenter() {
     </div>
   );
 }
+
+export default CCTVCommandCenter;

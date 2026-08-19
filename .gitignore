@@ -46,4 +46,7 @@ lerna-debug.log*
 # Generated output
 output/
 ai_ml/output/
+.agent/
+.cursor/
+*.zip
 

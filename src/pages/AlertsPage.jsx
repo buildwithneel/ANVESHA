@@ -20,6 +20,8 @@ import {
   Camera as CameraIcon,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { formatEventLabel } from '../utils/formatters';
+import { mockAlerts } from '../data/mockAlerts';
 
 const SEVERITY_FILTERS = ['ALL', 'CRITICAL', 'HIGH', 'WARNING', 'RESOLVED'];
 
@@ -28,7 +30,12 @@ export function AlertsPage() {
   const outletContext = useOutletContext() || {};
 
   // State
-  const [alerts, setAlerts] = useState(outletContext.alertsList || []);
+  const [alerts, setAlerts] = useState(() => {
+    if (Array.isArray(outletContext.alertsList) && outletContext.alertsList.length > 0) {
+      return outletContext.alertsList;
+    }
+    return mockAlerts;
+  });
   const [selectedSeverity, setSelectedSeverity] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [selectedCamera, setSelectedCamera] = useState('ALL');
@@ -161,16 +168,40 @@ export function AlertsPage() {
     setIsDemoRunning(true);
     try {
       const result = await alertService.triggerDemoScenario();
-      if (result?.alert) {
+      const rawAlert = result?.alert || result;
+      if (rawAlert) {
+        const newAlert = {
+          id: rawAlert.id || `ALT-${Date.now().toString().slice(-3)}`,
+          camera_id: rawAlert.camera_id || rawAlert.cameraId || 'CAM-07',
+          cameraId: rawAlert.camera_id || rawAlert.cameraId || 'CAM-07',
+          type: rawAlert.type || 'track_intrusion',
+          severity: (rawAlert.severity || 'CRITICAL').toUpperCase(),
+          status: 'ACTIVE',
+          message: rawAlert.message || 'CRITICAL: Live unauthorized person detected in track bed near Platform 3 North',
+          location: rawAlert.location || 'Platform 3 North Footbridge',
+          confidence: rawAlert.confidence || 0.97,
+          riskScore: rawAlert.risk_score || rawAlert.riskScore || 96,
+          risk_score: rawAlert.risk_score || rawAlert.riskScore || 96,
+          timestamp: rawAlert.created_at || rawAlert.timestamp || new Date().toISOString(),
+          created_at: rawAlert.created_at || rawAlert.timestamp || new Date().toISOString(),
+        };
+
         soundService.playAlertSound('CRITICAL');
         setDemoBanner({
           title: 'Judge Demo Scenario Triggered Successfully',
-          message: `${result.alert.id} (${result.alert.type.replace(/_/g, ' ').toUpperCase()}) dispatched via WebSocket to Platform 3 North CCTV feed.`,
+          message: `${newAlert.id} (${formatEventLabel(newAlert.type)}) dispatched to Platform 3 North CCTV feed.`,
         });
 
+        // Reset filters to ALL so the newly added critical alert is immediately visible
+        setSelectedSeverity('ALL');
+        setSelectedStatus('ALL');
+        setSelectedCamera('ALL');
+        setTimeRange('all');
+        setSearchQuery('');
+
         // Insert at head if not already present
-        setAlerts((prev) => [result.alert, ...prev.filter((a) => a.id !== result.alert.id)]);
-        setSelectedAlertForDrawer(result.alert);
+        setAlerts((prev) => [newAlert, ...prev.filter((a) => a.id !== newAlert.id)]);
+        setSelectedAlertForDrawer(newAlert);
 
         setTimeout(() => setDemoBanner(null), 6000);
       }
@@ -244,9 +275,11 @@ export function AlertsPage() {
       // 4. Time range filter
       if (timeRange !== 'all') {
         const itemTime = new Date(alert.timestamp || alert.created_at || alert.createdAt).getTime();
-        const now = Date.now();
-        if (timeRange === '1h' && now - itemTime > 3600000) return false;
-        if (timeRange === '24h' && now - itemTime > 86400000) return false;
+        if (!isNaN(itemTime)) {
+          const now = Date.now();
+          if (timeRange === '1h' && now - itemTime > 3600000) return false;
+          if (timeRange === '24h' && now - itemTime > 86400000) return false;
+        }
       }
 
       // 5. Search Query (Case-Insensitive across multiple fields)

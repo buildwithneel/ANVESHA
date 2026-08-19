@@ -25,7 +25,7 @@ class PrototypeFallAndObjectDetector:
             print(f"[SAFETY DETECTOR WARNING] Could not load pose model ({e}). Using geometric bounding box fallback.")
             self.pose_model = None
 
-    def _is_pose_fall(self, keypoints: np.ndarray, bbox: List[int]) -> Tuple[bool, float, str]:
+    def _is_pose_fall(self, keypoints: np.ndarray, bbox: List[int], frame_h: int = 480) -> Tuple[bool, float, str]:
         """
         Analyzes 17 COCO human pose keypoints to determine if a person has fallen.
         Keypoints format: [17, 3] -> (x, y, conf)
@@ -46,14 +46,7 @@ class PrototypeFallAndObjectDetector:
         w = x2 - x1
         h = max(1, y2 - y1)
 
-        # Geometric Criteria:
-        # 1. Bounding box aspect ratio criterion (w > h * 1.1)
-        is_horizontal_bbox = (w > h * 1.1) and (h > 20)
-
-        # 2. Keypoint orientation check (Head to Hip vertical distance vs horizontal displacement)
-        is_keypoint_fall = False
-        pose_conf = 0.85
-
+        # Pose keypoint orientation check (Head to Hip vertical distance vs horizontal displacement)
         if hip_y is not None and hip_x is not None:
             dy = abs(head_y - hip_y)
             dx = abs(head_x - hip_x)
@@ -61,17 +54,10 @@ class PrototypeFallAndObjectDetector:
             # If head and hips are at nearly the same vertical height level (|dy| < 40px)
             # AND horizontal distance between head and hip is large (dx > dy)
             if dy < 40.0 and dx > dy:
-                is_keypoint_fall = True
                 pose_conf = min(0.95, round(0.75 + (dx / (dy + 1.0)) * 0.05, 4))
+                return True, pose_conf, "KEYPOINT_POSTURE_HORIZONTAL"
             elif head_y > hip_y + 15.0: # Head below hips (collapsed on ground)
-                is_keypoint_fall = True
-                pose_conf = 0.92
-
-        # Combined Decision: Pose keypoint confirmation OR horizontal aspect ratio
-        if is_keypoint_fall:
-            return True, pose_conf, "KEYPOINT_POSTURE_HORIZONTAL"
-        elif is_horizontal_bbox and (hip_y is None or abs(head_y - hip_y) < 50):
-            return True, 0.82, "ASPECT_RATIO_HORIZONTAL"
+                return True, 0.92, "HEAD_BELOW_HIP_COLLAPSE"
 
         return False, 0.0, "NORMAL"
 
@@ -85,6 +71,8 @@ class PrototypeFallAndObjectDetector:
         """
         events = []
         active_fall_tids = set()
+
+        frame_h, frame_w = (frame.shape[:2]) if frame is not None else (480, 640)
 
         # Run pose model on full frame if frame is provided and pose model is loaded
         pose_results = None
@@ -110,25 +98,16 @@ class PrototypeFallAndObjectDetector:
                     from tracking.tracker import compute_iou
                     if compute_iou(bbox, p_xyxy) > 0.40:
                         kpts = pose_results.keypoints[idx].data[0].cpu().numpy()
-                        is_fall, fall_conf, posture_status = self._is_pose_fall(kpts, bbox)
+                        is_fall, fall_conf, posture_status = self._is_pose_fall(kpts, bbox, frame_h=frame_h)
                         break
-
-            # Fallback to bounding box aspect ratio if pose keypoint matching was inconclusive
-            if not is_fall:
-                x1, y1, x2, y2 = bbox
-                w, h = x2 - x1, max(1, y2 - y1)
-                if w > h * 1.25 and h > 20:
-                    is_fall = True
-                    fall_conf = round(max(0.75, person_conf * 0.90), 4)
-                    posture_status = "HORIZONTAL_ASPECT_RATIO"
 
             if is_fall:
                 active_fall_tids.add(track_id)
                 dwell = self.fall_dwell_counts.get(track_id, 0) + 1
                 self.fall_dwell_counts[track_id] = dwell
 
-                # Temporal confirmation (requires persistent fall posture for 3+ frame checks)
-                if dwell >= 3:
+                # Temporal confirmation (requires persistent fall posture for 4+ frame checks)
+                if dwell >= 4:
                     events.append({
                         "event_type": "fall",
                         "confidence": fall_conf if fall_conf > 0 else 0.85,
@@ -137,7 +116,9 @@ class PrototypeFallAndObjectDetector:
                             "bbox": bbox,
                             "dwell_frames": dwell,
                             "posture_status": posture_status,
-                            "status": "POSSIBLE FALL"
+                            "status": "POSSIBLE FALL",
+                            "frame_width": frame_w,
+                            "frame_height": frame_h
                         }
                     })
 

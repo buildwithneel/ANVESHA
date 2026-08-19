@@ -59,3 +59,58 @@ export function formatCameraCode(id) {
   if (!id) return 'CAM-UNKNOWN';
   return id.startsWith('CAM-') ? id : `CAM-${id.toUpperCase()}`;
 }
+
+/**
+ * Technical to Human-Friendly Event Label Mapping
+ */
+export const EVENT_LABEL_MAP = {
+  NO_HELMET: 'Helmet not detected',
+  PPE_VIOLATION: 'PPE compliance issue',
+  CROWD_SURGE: 'Crowd surge detected',
+  FALL_DETECTED: 'Possible fall detected',
+  SLIP_FALL: 'Possible fall detected',
+  FALL: 'Possible fall detected',
+  WORKER_FALL: 'Possible fall detected',
+  INTRUSION: 'Restricted-zone entry detected',
+  UNAUTHORIZED_ACCESS: 'Restricted-zone entry detected',
+  RESTRICTED_ZONE: 'Restricted-zone entry detected',
+  RESTRICTED_WORK_ZONE: 'Restricted-zone entry detected',
+  ABANDONED_OBJECT: 'Possible unattended luggage',
+  UNATTENDED_LUGGAGE: 'Possible unattended luggage',
+  NO_SAFETY_VEST: 'Safety vest not detected',
+  TRACK_INTRUSION: 'Track intrusion detected',
+  OVERCROWDING: 'Platform overcrowding detected',
+  UNSAFE_CROWDING: 'Platform overcrowding detected',
+  CROWD: 'Crowd surge detected',
+};
+
+/**
+ * Format technical AI event names into human-friendly operational labels for display
+ */
+export function formatEventLabel(type) {
+  if (!type) return 'Safety Event';
+  const key = String(type).toUpperCase().trim().replace(/\s+/g, '_');
+  if (EVENT_LABEL_MAP[key]) return EVENT_LABEL_MAP[key];
+  return type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * Format Crowd Status with standard operational severity indicators
+ */
+export function formatCrowdStatus(status) {
+  const s = String(status || '').toUpperCase();
+  if (s === 'LOW') {
+    return { label: 'LOW', colorClass: 'text-emerald-400', badgeClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' };
+  }
+  if (s === 'MODERATE') {
+    return { label: 'MODERATE', colorClass: 'text-amber-400', badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30' };
+  }
+  if (s === 'HIGH') {
+    return { label: 'HIGH', colorClass: 'text-orange-400', badgeClass: 'bg-orange-500/10 text-orange-400 border-orange-500/30' };
+  }
+  if (s === 'CRITICAL') {
+    return { label: 'CRITICAL', colorClass: 'text-rose-400', badgeClass: 'bg-rose-500/15 text-rose-400 border-rose-500/40 font-bold' };
+  }
+  return { label: s || 'NORMAL', colorClass: 'text-slate-300', badgeClass: 'bg-slate-500/10 text-slate-300 border-slate-500/30' };
+}
+

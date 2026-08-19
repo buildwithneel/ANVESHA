@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
+import { formatEventLabel } from '../../utils/formatters';
+
 export function PriorityActionsQueue({
   actions = [],
   onAcknowledge,
@@ -78,7 +80,7 @@ export function PriorityActionsQueue({
                   {item.severity}
                 </span>
                 <h3 className="text-xs font-bold text-text-primary truncate">
-                  {item.event_type}
+                  {formatEventLabel(item.event_type)}
                 </h3>
               </div>
 
