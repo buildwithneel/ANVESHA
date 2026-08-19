@@ -37,7 +37,7 @@ export function CCTVFullViewModal({
   onClose,
   onPrevCamera,
   onNextCamera,
-  sourceType = 'webcam',
+  sourceType = 'video',
   customVideoUrl = null,
 }) {
   const navigate = useNavigate();

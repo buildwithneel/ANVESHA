@@ -82,7 +82,7 @@ function normalizeBoundingBox(box, cameraResolution = '1920x1080') {
 export function CCTVViewer({
   camera,
   boundingBoxes = [],
-  sourceType = 'webcam',
+  sourceType = 'video',
   isFullscreen,
   onToggleFullscreen,
   onSnapshot,

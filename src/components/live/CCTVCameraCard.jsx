@@ -27,7 +27,7 @@ export const CCTVCameraCard = memo(function CCTVCameraCard({
   isFocused = false,
   onSelect,
   onViewAlerts,
-  sourceType = 'webcam',
+  sourceType = 'video',
   customVideoUrl = null,
 }) {
   const navigate = useNavigate();

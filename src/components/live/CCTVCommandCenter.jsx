@@ -47,7 +47,7 @@ export function CCTVCommandCenter() {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Demo CCTV Feed Source
-  const [cctvSource, setCctvSource] = useState('webcam'); // 'webcam' | 'video' | 'simulated'
+  const [cctvSource, setCctvSource] = useState('video'); // 'video' | 'webcam' | 'simulated'
   const [customVideoUrl, setCustomVideoUrl] = useState(null);
   const fileInputRef = useRef(null);
 

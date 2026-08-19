@@ -23,7 +23,7 @@ import { formatEventLabel } from '../../utils/formatters';
  */
 export function CCTVVideoFeed({
   camera,
-  sourceType = 'webcam', // 'webcam' (Python AI Laptop Camera) | 'video' | 'simulated'
+  sourceType = 'video', // 'video' | 'webcam' (Python AI Laptop Camera) | 'simulated'
   customVideoUrl = null,
   defaultVideoUrl = '/videos/sample_cctv.mp4',
   streamUrl = 'http://127.0.0.1:8090/stream',

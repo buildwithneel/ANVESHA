@@ -8,7 +8,7 @@ const priorityColors = {
   critical: { dot: 'bg-status-critical', badge: 'badge-critical' },
 };
 
-export default function CCTVPlayer({ camera, compact = false, sourceType = 'webcam', onClick }) {
+export default function CCTVPlayer({ camera, compact = false, sourceType = 'video', onClick }) {
   const isLive = camera.status === 'live';
   const [hasError, setHasError] = useState(false);
   const priority = priorityColors[camera.priorityLevel] || priorityColors.normal;
