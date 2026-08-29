@@ -150,7 +150,7 @@ ANVESHA/
 
 Developed with ❤️ for Smart India Hackathon (SIH) & Railway Safety Systems by:
 
-- **Neel** — [*@buildwithneel*](https://github.com/buildwithneel)
+- **Neel Agarwal** — [*@buildwithneel*](https://github.com/buildwithneel)
 - **Prathamesh Pandit** — [*@prathameshpandir-dev*](https://github.com/prathameshpandir-dev)
 
 ---
