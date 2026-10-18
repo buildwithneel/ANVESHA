@@ -20,6 +20,11 @@
   - **Restricted Zone & Track Intrusion**: Shapely polygon spatial intersection detecting unauthorized entry into track beds, signal gantries, and work zones.
   - **PPE Compliance Verification**: Color-space HSV masking detecting safety helmets and high-visibility vests in maintenance yards.
   - **Unattended Baggage Alerting**: Stationarity quantization tracking abandoned objects near concourses.
+  - **Perception Architecture with Ultralytics YOLOv8**:
+    - **Spatial Detection (yolov8n.pt)**: Extracts normalized bounding coordinates ([x1, y1, x2, y2]) and confidence scores for occupants in real-time.
+    - **Foot Anchor-Point Projection**: Downstream safety detectors extract bottom-center coordinates to compute point-in-polygon spatial intersections (via shapely) against track bed polygons in zones.json.
+    - **Tracking & Crowd Analytics Feed**: Powers ByteTrack for persistent ID tracking and platform crowd density quantification.
+    - **Keypoint Alignment (yolov8n-pose.pt)**: Analyzes head-to-hip vertical geometry to detect passenger platform falls.
 - **👥 Crowd Intelligence & Capacity Analytics**:
   - Real-time density heatmaps and occupancy percentages across platforms, FOB staircases, and waiting halls.
   - Predictive surge forecasting and capacity threshold alerts.
